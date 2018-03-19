@@ -71,9 +71,10 @@ public class MainActivity extends AppCompatActivity {
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    howManyTimes = totalTime / samplingTime;
-                    if (howManyTimes==0) howManyTimes=1;
-                    startSampling();
+                samplesArray.clear();
+                howManyTimes = totalTime / samplingTime;
+                if (howManyTimes==0) howManyTimes=1;
+                startSampling();
             }
         });
         duration = findViewById(R.id.duration);
@@ -111,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void startSampling(){
-        Log.i("IN","Start Sampling "+howManyTimes);
         howManyTimes--;
         initialiseRecorder();
         try {
@@ -134,11 +134,10 @@ public class MainActivity extends AppCompatActivity {
         samplesArray.add(value);
         String display = "";
         for (int j: samplesArray){
-            display+=j;
+            display+=j+"dB ";
         }
-        readingTV.setText("" + display + "dB");
+        readingTV.setText(display);
         if (howManyTimes>0) startSampling();
-        if (howManyTimes==0) samplesArray.clear();
 //        recordSQL();
     }
 
