@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    howManyTimes = totalTime % samplingTime;
+                    howManyTimes = totalTime / samplingTime;
                     if (howManyTimes==0) howManyTimes=1;
                     startSampling();
             }
@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void startSampling(){
+        Log.i("IN","Start Sampling "+howManyTimes);
         howManyTimes--;
         initialiseRecorder();
         try {
@@ -131,9 +132,13 @@ public class MainActivity extends AppCompatActivity {
         recorder = null;
         sampleBut.setText(R.string.startSampling);
         samplesArray.add(value);
-        readingTV.setText("" + value + "dB");
-        if (howManyTimes>1) startSampling();
-
+        String display = "";
+        for (int j: samplesArray){
+            display+=j;
+        }
+        readingTV.setText("" + display + "dB");
+        if (howManyTimes>0) startSampling();
+        if (howManyTimes==0) samplesArray.clear();
 //        recordSQL();
     }
 
