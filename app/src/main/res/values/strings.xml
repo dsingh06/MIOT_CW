@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AndroidMicCW</string>
+    <string name="Sampling">Sampling...</string>
+    <string name="startSampling">Start Sampling</string>
+</resources>
