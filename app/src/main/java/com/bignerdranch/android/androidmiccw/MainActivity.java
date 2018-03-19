@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED;
 import static java.lang.Math.log10;
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private String mFileName = null;
     private int samplingTime = 1;
     private int totalTime = 1;
+    private int howManyTimes;
+    private List<Integer> samplesArray = new ArrayList<>();
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
@@ -67,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                    howManyTimes = totalTime % samplingTime;
+                    if (howManyTimes==0) howManyTimes=1;
                     startSampling();
             }
         });
@@ -75,8 +81,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (i==0) i=1;
-                samplingTime = i;
-                timeTV.setText(samplingTime+"s");
+                totalTime = i;
+                timeTV.setText(totalTime+"s");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -88,8 +94,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (i==0) i=1;
-                totalTime = i;
-                frequencyTV.setText(totalTime+"s");
+                samplingTime = i;
+                frequencyTV.setText(samplingTime+"s");
+                if (samplingTime>totalTime){
+                    duration.setProgress(samplingTime);
+                }
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -102,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void startSampling(){
+        howManyTimes--;
         initialiseRecorder();
         try {
             recorder.prepare();
@@ -115,11 +125,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopSampling(){
-        readingTV.setText("" + round(20 * log10(recorder.getMaxAmplitude() / 32767.0)) + "dB");
+        int value = (int) round(20 * log10(recorder.getMaxAmplitude() / 32767.0));
         recorder.stop();
         recorder.release();
         recorder = null;
         sampleBut.setText(R.string.startSampling);
+        samplesArray.add(value);
+        readingTV.setText("" + value + "dB");
+        if (howManyTimes>1) startSampling();
+
 //        recordSQL();
     }
 
