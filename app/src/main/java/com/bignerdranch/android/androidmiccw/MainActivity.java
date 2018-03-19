@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void recordSQL(){
-        //TODO - Eileen to provide object with parameters
+        //TODO - Eileen to provide object of Location class with parameters
     }
 
     private void initialiseRecorder(){
