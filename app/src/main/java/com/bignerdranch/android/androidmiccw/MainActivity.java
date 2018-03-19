@@ -21,12 +21,15 @@ import static java.lang.Math.round;
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_RECORD_AUDIO_PERMISSION = 31;
     private Button sampleBut;
+    private SeekBar frequency;
     private SeekBar duration;
     private MediaRecorder recorder = null;
     private TextView readingTV;
-    private TextView time;
+    private TextView timeTV;
+    private TextView frequencyTV;
     private String mFileName = null;
     private int samplingTime = 1;
+    private int totalTime = 1;
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
@@ -52,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
         readingTV = findViewById(R.id.reading);
-        time = findViewById(R.id.time);
+        timeTV = findViewById(R.id.timeDuration);
+        frequencyTV = findViewById(R.id.timeFrequency);
+
 
         // Record to the external cache directory for visibility
         mFileName = getExternalCacheDir().getAbsolutePath();
@@ -71,7 +76,20 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (i==0) i=1;
                 samplingTime = i;
-                time.setText(samplingTime+"s");
+                timeTV.setText(samplingTime+"s");
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+        frequency = findViewById(R.id.freq);
+        frequency.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if (i==0) i=1;
+                totalTime = i;
+                frequencyTV.setText(totalTime+"s");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
