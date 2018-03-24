@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +86,8 @@ public class MainActivity extends AppCompatActivity {
                 if (i==0) i=1;
                 totalTime = i;
                 timeTV.setText(totalTime+"s");
-                if (samplingTime>totalTime) duration.setProgress(samplingTime);
+                if (samplingTime>totalTime)
+                    duration.setProgress(samplingTime);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
