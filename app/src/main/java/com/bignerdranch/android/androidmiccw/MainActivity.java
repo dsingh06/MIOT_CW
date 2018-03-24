@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 if (i==0) i=1;
                 totalTime = i;
                 timeTV.setText(totalTime+"s");
+                if (samplingTime>totalTime) duration.setProgress(samplingTime);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
