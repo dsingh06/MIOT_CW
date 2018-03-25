@@ -1,6 +1,7 @@
 package com.bignerdranch.android.androidmiccw;
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -33,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder recorder = null;
     private TextView readingTV;
     private TextView timeTV;
-    private TextView latitude;
-    private TextView longitude;
+    private static TextView latitude;
+    private static TextView longitude;
     private TextView frequencyTV;
     private String mFileName = null;
     private int samplingTime = 1;
@@ -152,11 +153,11 @@ public class MainActivity extends AppCompatActivity {
         recorder = null;
         sampleBut.setText(R.string.startSampling);
         samplesArray.add(value);
-        String display = "";
+        int display=-500;
         for (int j: samplesArray){
-            display+=j+"dB ";
+            if (j>display)display = j;
         }
-        readingTV.setText(display);
+        readingTV.setText(""+display+"dB");
         if (howManyTimes>0) startSampling();
 //        recordSQL();
     }
@@ -182,5 +183,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    public static void update(Location location) {
+        latitude.setText(""+location.getLatitude());
+        longitude.setText(""+location.getLongitude());
     }
 }
