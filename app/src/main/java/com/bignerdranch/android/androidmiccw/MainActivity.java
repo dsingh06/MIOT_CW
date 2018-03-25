@@ -23,7 +23,8 @@ import static java.lang.Math.round;
 
 
 public class MainActivity extends AppCompatActivity {
-    private final int REQUEST_RECORD_AUDIO_PERMISSION = 31;
+    private final int REQUEST_PERMISSION_CODE = 31;
+
     private Button sampleBut;
     private SeekBar frequency;
     private SeekBar duration;
@@ -37,16 +38,24 @@ public class MainActivity extends AppCompatActivity {
     private int howManyTimes;
     private List<Integer> samplesArray = new ArrayList<>();
 
-    // Requesting permission to RECORD_AUDIO
+    // Requesting permission to RECORD_AUDIO and access location
     private boolean permissionToRecordAccepted = false;
-    private String [] permissions = {Manifest.permission.RECORD_AUDIO};
+    private boolean permissionToAccessFineLocation = false;
+    private boolean permissionToAccessCoarseLocation = false;
+
+    private String [] permissions = {Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
-            case REQUEST_RECORD_AUDIO_PERMISSION:
+            case REQUEST_PERMISSION_CODE:
                 permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                permissionToAccessFineLocation  = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                permissionToAccessCoarseLocation  = grantResults[2] == PackageManager.PERMISSION_GRANTED;
                 break;
         }
         if (!permissionToRecordAccepted ) finish();
@@ -58,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
+
 
         readingTV = findViewById(R.id.reading);
         timeTV = findViewById(R.id.timeDuration);
