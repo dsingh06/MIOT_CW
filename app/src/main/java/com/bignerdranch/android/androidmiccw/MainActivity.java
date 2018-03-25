@@ -13,6 +13,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder recorder = null;
     private TextView readingTV;
     private TextView timeTV;
+    private TextView latitude;
+    private TextView longitude;
     private TextView frequencyTV;
     private String mFileName = null;
     private int samplingTime = 1;
@@ -73,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
         readingTV = findViewById(R.id.reading);
         timeTV = findViewById(R.id.timeDuration);
         frequencyTV = findViewById(R.id.timeFrequency);
-
+        latitude = findViewById(R.id.lat);
+        longitude = findViewById(R.id.lon);
 
         // Record to the external cache directory for visibility
         mFileName = getExternalCacheDir().getAbsolutePath();
@@ -83,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 samplesArray.clear();
                 howManyTimes = totalTime / samplingTime;
                 if (howManyTimes==0) howManyTimes=1;

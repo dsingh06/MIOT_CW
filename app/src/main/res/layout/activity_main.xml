@@ -89,10 +89,10 @@
 
     <TextView
         android:id="@+id/reading"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:gravity="center_vertical|center_horizontal"
         android:hint="--dB"
@@ -100,7 +100,7 @@
         android:textSize="30sp"
         android:textStyle="bold|italic"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@id/textView4" />
 
     <TextView
@@ -118,16 +118,16 @@
 
     <TextView
         android:id="@+id/textView4"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="25dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:text="Current Reading"
         android:textAlignment="center"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.Guideline
@@ -150,6 +150,52 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/reading" />
+
+    <TextView
+        android:id="@+id/lat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="............."
+        app:layout_constraintBottom_toTopOf="@+id/lon"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintStart_toEndOf="@+id/textView6"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/lon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:text="............."
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintStart_toEndOf="@+id/textView7"
+        tools:layout_editor_absoluteY="79dp" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="LAT"
+        app:layout_constraintBottom_toTopOf="@+id/textView7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="LON"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteY="79dp" />
 
 
 </android.support.constraint.ConstraintLayout>
