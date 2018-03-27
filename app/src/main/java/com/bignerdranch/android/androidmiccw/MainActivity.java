@@ -86,11 +86,14 @@ public class MainActivity extends AppCompatActivity {
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                sampleBut.setClickable(false);
+                duration.setClickable(false);
+                frequency.setClickable(false);
                 samplesArray.clear();
                 howManyTimes = totalTime / samplingTime;
-                if (howManyTimes==0) howManyTimes=1;
+                if (howManyTimes == 0) howManyTimes = 1;
                 startSampling();
+
             }
         });
         duration = findViewById(R.id.duration);
@@ -134,18 +137,21 @@ public class MainActivity extends AppCompatActivity {
         initialiseRecorder();
         try {
             recorder.prepare();
+            sampleBut.setText(R.string.Sampling);
+            readingTV.setText(".....");
+            recorder.start();
+            recorder.getMaxAmplitude();
         } catch (IOException e) {
             Log.i("startSampling: ", "prepare() failed");
+        } catch (IllegalStateException e){
+            Log.i("startSampling: ", "prepare() failed");
         }
-        sampleBut.setText(R.string.Sampling);
-        readingTV.setText(".....");
-        recorder.start();
-        recorder.getMaxAmplitude();
     }
 
     private void stopSampling(){
         int value = (int) round(20 * log10(recorder.getMaxAmplitude() / 32767.0));
         recorder.stop();
+        recorder.reset();
         recorder.release();
         recorder = null;
         sampleBut.setText(R.string.startSampling);
@@ -156,11 +162,16 @@ public class MainActivity extends AppCompatActivity {
         }
         readingTV.setText(""+display+"dB");
         if (howManyTimes>0) startSampling();
-//        recordSQL();
+        if (howManyTimes==0)recordSQL();
     }
 
     private void recordSQL(){
         //TODO - Eileen to provide object of Location class with parameters
+            Log.i("How many times","****** "+howManyTimes );
+            sampleBut.setClickable(true);
+            duration.setClickable(true);
+            frequency.setClickable(true);
+            howManyTimes = -5;
     }
 
     private void initialiseRecorder(){
@@ -169,7 +180,11 @@ public class MainActivity extends AppCompatActivity {
             recorder.setMaxDuration(samplingTime*1000);
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            recorder.setOutputFile(mFileName);
+            try{
+                recorder.setOutputFile(mFileName);
+            } catch (IllegalStateException e){
+                Log.i("Exception caught","File already set");
+            }
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             recorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
                 @Override
