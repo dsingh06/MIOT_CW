@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         if (!permissionToRecordAccepted ) finish();
-
+        initialiseRecorder();
     }
 
 
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 if (i==0) i=1;
                 totalTime = i;
                 timeTV.setText(totalTime+"s");
-                if (samplingTime>totalTime)
+                if (samplingTime<totalTime)
                     duration.setProgress(samplingTime);
             }
             @Override
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 if (i==0) i=1;
                 samplingTime = i;
                 frequencyTV.setText(samplingTime+"s");
-                if (samplingTime>totalTime){
+                if (samplingTime<totalTime){
                     duration.setProgress(samplingTime);
                 }
             }
@@ -127,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-        initialiseRecorder();
 
     }
 
