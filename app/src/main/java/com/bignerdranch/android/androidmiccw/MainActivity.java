@@ -1,21 +1,30 @@
 package com.bignerdranch.android.androidmiccw;
+
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.MediaRecorder;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.gms.iid.InstanceID;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED;
@@ -24,6 +33,9 @@ import static java.lang.Math.round;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_SIGN_IN = 42;
+    static final int RESULT_FAIL = 0;
+    static final int RESULT_SUCCESS = 1;
     private final int REQUEST_PERMISSION_CODE = 31;
 
     private Button sampleBut;
@@ -32,14 +44,18 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder recorder = null;
     private TextView readingTV;
     private TextView timeTV;
-    private static TextView latitude;
-    private static TextView longitude;
+    private TextView latitude;
+    private TextView longitude;
     private TextView frequencyTV;
     private String mFileName = null;
     private int samplingTime = 1;
     private int totalTime = 1;
     private int howManyTimes;
-    private List<Integer> samplesArray = new ArrayList<>();
+    private List<Integer> soundArray = new ArrayList<>();
+    private List<Sample> sampleArray = new ArrayList<>();
+    private Sample sample;
+    private String uid;
+    private Location mLocation;
 
     // Requesting permission to RECORD_AUDIO and access location
     private boolean permissionToRecordAccepted = false;
@@ -65,11 +81,32 @@ public class MainActivity extends AppCompatActivity {
         initialiseRecorder();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.actions, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = new Intent(this, AuthActivity.class);
+        startActivityForResult(intent, REQUEST_SIGN_IN);
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_SIGN_IN && resultCode == RESULT_SUCCESS) {
+            uid = data.getStringExtra("User ID");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setSupportActionBar(findViewById(R.id.my_toolbar));
         ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
 
         readingTV = findViewById(R.id.reading);
@@ -89,11 +126,11 @@ public class MainActivity extends AppCompatActivity {
                 sampleBut.setClickable(false);
                 duration.setClickable(false);
                 frequency.setClickable(false);
-                samplesArray.clear();
+                soundArray.clear();
                 howManyTimes = totalTime / samplingTime;
                 if (howManyTimes == 0) howManyTimes = 1;
+                update(mLocation);
                 startSampling();
-
             }
         });
         duration = findViewById(R.id.duration);
@@ -127,11 +164,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-
     }
 
-
     private void startSampling(){
+        //instantiate a new sample
+        sample = new Sample();
+        sample.setIid(InstanceID.getInstance(this).getId());
+        sample.setUid(uid);
         howManyTimes--;
         initialiseRecorder();
         try {
@@ -139,6 +178,11 @@ public class MainActivity extends AppCompatActivity {
             sampleBut.setText(R.string.Sampling);
             readingTV.setText(".....");
             recorder.start();
+            sample.setStartTime(new Date().getTime());
+            if (mLocation != null) {
+                sample.setLatitude(mLocation.getLatitude());
+                sample.setLongitude(mLocation.getLongitude());
+            }
             recorder.getMaxAmplitude();
         } catch (IOException e) {
             Log.i("startSampling: ", "prepare() failed");
@@ -153,24 +197,34 @@ public class MainActivity extends AppCompatActivity {
         recorder.reset();
         recorder.release();
         recorder = null;
+        sample.setStopTime(new Date().getTime());
         sampleBut.setText(R.string.startSampling);
-        samplesArray.add(value);
+        soundArray.add(value);
+        sample.setMaxDecibels(value);
         int display=-500;
-        for (int j: samplesArray){
+        for (int j: soundArray){
             if (j>display)display = j;
         }
         readingTV.setText(""+display+"dB");
-        if (howManyTimes>0) startSampling();
-        if (howManyTimes==0)recordSQL();
+        sampleArray.add(sample);
+        if (howManyTimes > 0) {
+            startSampling();
+        } else {
+            recordSQL();
+        }
     }
 
+    //triggered upon stopping sampling
     private void recordSQL(){
-        //TODO - Eileen to provide object of Location class with parameters
-            Log.i("How many times","****** "+howManyTimes );
-            sampleBut.setClickable(true);
-            duration.setClickable(true);
-            frequency.setClickable(true);
-            howManyTimes = -5;
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("sync");
+        for (Sample s: sampleArray) {
+            myRef.setValue(s);
+        }
+        Log.i("How many times","****** "+howManyTimes );
+        sampleBut.setClickable(true);
+        duration.setClickable(true);
+        frequency.setClickable(true);
     }
 
     private void initialiseRecorder(){
@@ -196,7 +250,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static void update(Location location) {
+    public void update(Location location) {
+        mLocation = location;
         latitude.setText(""+location.getLatitude());
         longitude.setText(""+location.getLongitude());
     }

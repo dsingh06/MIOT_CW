@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AndroidMicCW.iml" filepath="$PROJECT_DIR$/AndroidMicCW.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MIOT_CW.iml" filepath="$PROJECT_DIR$/MIOT_CW.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

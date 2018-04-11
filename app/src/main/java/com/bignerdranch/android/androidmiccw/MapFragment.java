@@ -19,7 +19,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
-
 public class MapFragment extends Fragment implements OnMapReadyCallback {
     public GoogleMap mMap;
     private SupportMapFragment mSupportMapFragment;
@@ -47,7 +46,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             public void onMyLocationChange(Location location) {
                 LatLng mLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLocation, 17));
-                MainActivity.update(location);
+                ((MainActivity) MapFragment.this.getActivity()).update(location);
             }
         });
 
