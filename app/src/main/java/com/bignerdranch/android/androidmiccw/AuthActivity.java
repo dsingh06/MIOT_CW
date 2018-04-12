@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -49,14 +50,17 @@ public class AuthActivity extends Activity {
     public void createAccount(String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    private final String TAG = AuthActivity.class.getSimpleName();
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user);
+                            Log.d(TAG,"Account created, user signed in, UI updated");
                         } else {
                             updateUI(null);
+                            Log.d(TAG,"Failure to log in, no UI update");
                         }
                     }
                 });
@@ -65,13 +69,16 @@ public class AuthActivity extends Activity {
     public void signIn(String email, String password) {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    private final String TAG = AuthActivity.class.getSimpleName();
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user);
+                            Log.d(TAG,"User signed in, UI updated");
                         } else {
                             updateUI(null);
+                            Log.d(TAG,"Failure to log in, no UI update");
                         }
                     }
                 });

@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("sync");
         for (Sample s: sampleArray) {
-            myRef.setValue(s);
+            myRef.child(s.getIid()).child(String.valueOf(s.getStartTime())).setValue(s);
         }
         Log.i("How many times","****** "+howManyTimes );
         sampleBut.setClickable(true);
