@@ -34,7 +34,10 @@ import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACH
 import static java.lang.Math.log10;
 import static java.lang.Math.round;
 
-
+/**
+ * App's main activity contains buttons for setting sampling frequency and duration of recordings
+ * and start/stop button.
+ */
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
@@ -60,33 +63,24 @@ public class MainActivity extends AppCompatActivity {
     private Sample sample;
     private String uid;
     private Location mLocation;
-    private Boolean isContinuouslyRecording = false;
-    private long recordingsStartTime;
-    private long recordingsStopTime;
-
-    // Requesting permission to RECORD_AUDIO and access location
+    private boolean isContinuouslyRecording = false;
     private boolean permissionToRecordAccepted = false;
-    private boolean permissionToAccessFineLocation = false;
-    private boolean permissionToAccessCoarseLocation = false;
-
-    private String [] permissions = {Manifest.permission.RECORD_AUDIO,
+    private String [] permissions = {
+            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
     };
 
-
+    // Requesting permission to RECORD_AUDIO and access location
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
             case REQUEST_PERMISSION_CODE:
                 permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                permissionToAccessFineLocation  = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                permissionToAccessCoarseLocation  = grantResults[2] == PackageManager.PERMISSION_GRANTED;
                 break;
         }
         if (!permissionToRecordAccepted ) finish();
-        initialiseRecorder();
     }
 
     @Override
@@ -96,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // Authentication item in action bar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent = new Intent(this, AuthActivity.class);
@@ -103,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // Result of AuthActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_SIGN_IN && resultCode == RESULT_SUCCESS) {
@@ -141,16 +137,14 @@ public class MainActivity extends AppCompatActivity {
                     frequency.setClickable(false);
                     soundArray.clear();
                     update(mLocation);
-                    recordingsStartTime = new Date().getTime();
                     startSampling();
                 }
             }
         });
 
-        //three time-related variables:
+        // Two time-related variables:
         // sampleDuration (how long a recording is taken for)
-        // sampleFrequency (how often recordings start)
-        // howManyTimes (how many recordings are started)
+        // sampleKickoffFrequency (time between start times of consecutive samples)
         duration = findViewById(R.id.duration);
         duration.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -184,6 +178,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Starts a sampling session of one or more samples.
+     */
     private void startSampling() {
         Log.i(TAG, "startSampling");
         isContinuouslyRecording = true;
@@ -192,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
         startSample();
     }
 
+    /**
+     * Starts a sample recording.
+     */
     private void startSample() {
         Log.i(TAG, "startSample");
         //instantiate a new sample
@@ -211,7 +211,11 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "prepare() failed");
         }
     }
-    
+
+    /**
+     * Called when the recording duration has elapsed for a single sample.
+     * Queues up the next sample if isContinuouslyRecording is true.
+     */
     private void onSampleComplete() {
         Log.i(TAG, "onSampleComplete");
         int value = (int) round(20 * log10(recorder.getMaxAmplitude() / 32767.0));
@@ -221,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
         recorder = null;
         long stopTime = new Date().getTime();
         sample.setStopTime(stopTime);
-        recordingsStopTime = stopTime;
         soundArray.add(value);
         sample.setMaxDecibels(value);
         int display=-500;
@@ -231,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
         readingTV.setText(""+display+"dB");
         sampleArray.add(sample);
         if (isContinuouslyRecording) {
+            //Since the callback is on the UI thread, using an AsyncTask to sleep on a background thread
             (new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... voids) {
@@ -247,13 +251,18 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 protected void onPostExecute(Void aVoid) {
-                    startSample();
+                    if (isContinuouslyRecording) {
+                        startSample();
+                    }
                 }
             }).execute();
         }
     }
 
-    //triggered upon stopping sampling
+    /**
+     * Stops sampling session.
+     * If a sample is in progress when this is called, the recorder is reset and sample discarded.
+     */
     private void stopSampling() {
         Log.i(TAG, "stopSampling");
         isContinuouslyRecording = false;
@@ -298,6 +307,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the latitude and longitude displayed on screen.
+     * Sets the latitude and longitude for any sample recording.
+     */
     public void update(Location location) {
         mLocation = location;
         latitude.setText(""+location.getLatitude());

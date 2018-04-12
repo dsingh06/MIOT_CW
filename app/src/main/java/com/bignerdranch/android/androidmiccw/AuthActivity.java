@@ -19,6 +19,10 @@ import com.google.firebase.auth.FirebaseUser;
 import static com.bignerdranch.android.androidmiccw.MainActivity.RESULT_FAIL;
 import static com.bignerdranch.android.androidmiccw.MainActivity.RESULT_SUCCESS;
 
+/**
+ * Sourced boilerplate from Firebase.
+ * Returns user ID to calling activity in the result intent (onActivityResult).
+ */
 public class AuthActivity extends Activity {
     private FirebaseAuth mAuth;
     private EditText emailInput;

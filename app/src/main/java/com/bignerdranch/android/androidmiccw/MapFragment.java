@@ -19,6 +19,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
+/**
+ * Embeds a SupportMapFragment and updates MainActivity's location when device location is known.
+ */
 public class MapFragment extends Fragment implements OnMapReadyCallback {
     public GoogleMap mMap;
     private SupportMapFragment mSupportMapFragment;

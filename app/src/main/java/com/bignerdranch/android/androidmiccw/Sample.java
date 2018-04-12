@@ -12,6 +12,9 @@ public class Sample {
 
     public Sample() {}
 
+    /**
+     * Uid is the user ID from Firebase
+     */
     public String getUid() {
         return uid;
     }
@@ -20,6 +23,10 @@ public class Sample {
         this.uid = uid;
     }
 
+    /**
+     * Iid is the instance ID, a unique identifier for each app instance.
+     * From Google Play Services.
+     */
     public String getIid() {
         return iid;
     }
@@ -28,6 +35,9 @@ public class Sample {
         this.iid = iid;
     }
 
+    /**
+     * Time of start of recording, taken from Date().getTime().
+     */
     public long getStartTime() {
         return startTime;
     }
@@ -36,6 +46,9 @@ public class Sample {
         this.startTime = startTime;
     }
 
+    /**
+     * Time of stopping recording, taken from Date().getTime().
+     */
     public long getStopTime() {
         return stopTime;
     }
@@ -44,6 +57,9 @@ public class Sample {
         this.stopTime = stopTime;
     }
 
+    /**
+     * Gives latitude in degrees north.
+     */
     public double getLatitude() {
         return latitude;
     }
@@ -52,6 +68,9 @@ public class Sample {
         this.latitude = latitude;
     }
 
+    /**
+     * Longitude in degrees east.
+     */
     public double getLongitude() {
         return longitude;
     }
@@ -60,6 +79,9 @@ public class Sample {
         this.longitude = longitude;
     }
 
+    /**
+     * The loudest sound made during the duration of a recording, in decibels.
+     */
     public int getMaxDecibels() {
         return maxDecibels;
     }
