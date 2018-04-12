@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">AndroidMicCW</string>
-    <string name="Sampling">Sampling...</string>
-    <string name="startSampling">Start Sampling</string>
+    <string name="stop_sampling">Stop Sampling</string>
+    <string name="start_sampling">Start Sampling</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="title_activity_maps">Map</string>

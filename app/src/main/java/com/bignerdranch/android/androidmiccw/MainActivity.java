@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.lang.*;
+import java.util.concurrent.TimeUnit;
 
 import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED;
 import static java.lang.Math.log10;
@@ -33,6 +36,8 @@ import static java.lang.Math.round;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+
     private static final int REQUEST_SIGN_IN = 42;
     static final int RESULT_FAIL = 0;
     static final int RESULT_SUCCESS = 1;
@@ -48,14 +53,16 @@ public class MainActivity extends AppCompatActivity {
     private TextView longitude;
     private TextView frequencyTV;
     private String mFileName = null;
-    private int samplingTime = 1;
-    private int totalTime = 1;
-    private int howManyTimes;
+    private int sampleKickoffFrequency = 1;
+    private int sampleDuration = 1;
     private List<Integer> soundArray = new ArrayList<>();
     private List<Sample> sampleArray = new ArrayList<>();
     private Sample sample;
     private String uid;
     private Location mLocation;
+    private Boolean isContinuouslyRecording = false;
+    private long recordingsStartTime;
+    private long recordingsStopTime;
 
     // Requesting permission to RECORD_AUDIO and access location
     private boolean permissionToRecordAccepted = false;
@@ -66,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
     };
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -123,25 +131,35 @@ public class MainActivity extends AppCompatActivity {
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sampleBut.setClickable(false);
-                duration.setClickable(false);
-                frequency.setClickable(false);
-                soundArray.clear();
-                howManyTimes = totalTime / samplingTime;
-                if (howManyTimes == 0) howManyTimes = 1;
-                update(mLocation);
-                startSampling();
+                if (isContinuouslyRecording) {
+                    Log.i(TAG, "Clicked stop");
+                    stopSampling();
+                } else {
+                    Log.i(TAG, "Clicked start");
+                    sampleBut.setText(R.string.stop_sampling);
+                    duration.setClickable(false);
+                    frequency.setClickable(false);
+                    soundArray.clear();
+                    update(mLocation);
+                    recordingsStartTime = new Date().getTime();
+                    startSampling();
+                }
             }
         });
+
+        //three time-related variables:
+        // sampleDuration (how long a recording is taken for)
+        // sampleFrequency (how often recordings start)
+        // howManyTimes (how many recordings are started)
         duration = findViewById(R.id.duration);
         duration.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (i==0) i=1;
-                totalTime = i;
-                timeTV.setText(totalTime+"s");
-                if (samplingTime<totalTime)
-                    duration.setProgress(samplingTime);
+                sampleDuration = i;
+                timeTV.setText(sampleDuration +"s");
+                if (sampleKickoffFrequency < sampleDuration)
+                    duration.setProgress(sampleKickoffFrequency);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -153,10 +171,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (i==0) i=1;
-                samplingTime = i;
-                frequencyTV.setText(samplingTime+"s");
-                if (samplingTime<totalTime){
-                    duration.setProgress(samplingTime);
+                sampleKickoffFrequency = i;
+                frequencyTV.setText(sampleKickoffFrequency +"s");
+                if (sampleKickoffFrequency < sampleDuration){
+                    duration.setProgress(sampleKickoffFrequency);
                 }
             }
             @Override
@@ -166,39 +184,44 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void startSampling(){
+    private void startSampling() {
+        Log.i(TAG, "startSampling");
+        isContinuouslyRecording = true;
+        sampleBut.setText(R.string.stop_sampling);
+        readingTV.setText(".....");
+        startSample();
+    }
+
+    private void startSample() {
+        Log.i(TAG, "startSample");
         //instantiate a new sample
         sample = new Sample();
         sample.setIid(InstanceID.getInstance(this).getId());
         sample.setUid(uid);
-        howManyTimes--;
         initialiseRecorder();
         try {
             recorder.prepare();
-            sampleBut.setText(R.string.Sampling);
-            readingTV.setText(".....");
-            recorder.start();
-            sample.setStartTime(new Date().getTime());
             if (mLocation != null) {
                 sample.setLatitude(mLocation.getLatitude());
                 sample.setLongitude(mLocation.getLongitude());
             }
-            recorder.getMaxAmplitude();
+            sample.setStartTime(new Date().getTime());
+            recorder.start();
         } catch (IOException e) {
-            Log.i("startSampling: ", "prepare() failed");
-        } catch (IllegalStateException e){
-            Log.i("startSampling: ", "prepare() failed");
+            Log.i(TAG, "prepare() failed");
         }
     }
-
-    private void stopSampling(){
+    
+    private void onSampleComplete() {
+        Log.i(TAG, "onSampleComplete");
         int value = (int) round(20 * log10(recorder.getMaxAmplitude() / 32767.0));
         recorder.stop();
         recorder.reset();
         recorder.release();
         recorder = null;
-        sample.setStopTime(new Date().getTime());
-        sampleBut.setText(R.string.startSampling);
+        long stopTime = new Date().getTime();
+        sample.setStopTime(stopTime);
+        recordingsStopTime = stopTime;
         soundArray.add(value);
         sample.setMaxDecibels(value);
         int display=-500;
@@ -207,30 +230,55 @@ public class MainActivity extends AppCompatActivity {
         }
         readingTV.setText(""+display+"dB");
         sampleArray.add(sample);
-        if (howManyTimes > 0) {
-            startSampling();
-        } else {
-            recordSQL();
+        if (isContinuouslyRecording) {
+            (new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    if (sampleKickoffFrequency > sampleDuration) {
+                        try {
+                            Log.i(TAG, "Waiting " + (sampleKickoffFrequency - sampleDuration) + " seconds");
+                            TimeUnit.SECONDS.sleep((sampleKickoffFrequency - sampleDuration));
+                        } catch (InterruptedException e) {
+                            Log.d("Interrupted Exception", "Was sleeping until next recording");
+                        }
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    startSample();
+                }
+            }).execute();
         }
     }
 
     //triggered upon stopping sampling
-    private void recordSQL(){
+    private void stopSampling() {
+        Log.i(TAG, "stopSampling");
+        isContinuouslyRecording = false;
+        if (recorder != null) {
+            recorder.stop();
+            recorder.reset();
+            recorder.release();
+            recorder = null;
+        }
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("sync");
         for (Sample s: sampleArray) {
             myRef.child(s.getIid()).child(String.valueOf(s.getStartTime())).setValue(s);
         }
-        Log.i("How many times","****** "+howManyTimes );
-        sampleBut.setClickable(true);
+        Log.i("How many times","****** "+sampleArray.size());
         duration.setClickable(true);
         frequency.setClickable(true);
+        sampleBut.setText(R.string.start_sampling);
     }
 
-    private void initialiseRecorder(){
+    private void initialiseRecorder() {
+        Log.i(TAG, "initialiseRecorder");
         if (recorder == null){
             recorder = new MediaRecorder();
-            recorder.setMaxDuration(samplingTime*1000);
+            recorder.setMaxDuration(sampleDuration*1000);
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
             try{
@@ -242,8 +290,8 @@ public class MainActivity extends AppCompatActivity {
             recorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
                 @Override
                 public void onInfo(MediaRecorder mr, int what, int extra) {
-                    if (what==MEDIA_RECORDER_INFO_MAX_DURATION_REACHED){
-                        stopSampling();
+                    if (what == MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
+                        onSampleComplete();
                     }
                 }
             });
