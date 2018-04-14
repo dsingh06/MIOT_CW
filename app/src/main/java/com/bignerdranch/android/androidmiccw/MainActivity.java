@@ -113,17 +113,17 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(findViewById(R.id.my_toolbar));
         ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
 
-        readingTV = findViewById(R.id.reading);
-        timeTV = findViewById(R.id.timeDuration);
-        frequencyTV = findViewById(R.id.timeFrequency);
-        latitude = findViewById(R.id.lat);
-        longitude = findViewById(R.id.lon);
+        readingTV = findViewById(R.id.reading_units);
+        timeTV = findViewById(R.id.sampling_duration_units);
+        frequencyTV = findViewById(R.id.sampling_frequency_units);
+        latitude = findViewById(R.id.lat_units);
+        longitude = findViewById(R.id.lon_units);
 
         // Record to the external cache directory for visibility
         mFileName = getExternalCacheDir().getAbsolutePath();
         mFileName += "/audio31.3gp";
 
-        sampleBut = findViewById(R.id.sample);
+        sampleBut = findViewById(R.id.sample_but);
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
