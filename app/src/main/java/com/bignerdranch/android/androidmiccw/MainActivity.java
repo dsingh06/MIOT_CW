@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
                     duration.setClickable(false);
                     frequency.setClickable(false);
                     soundArray.clear();
-                    update(mLocation);
                     startSampling();
                 }
             }
@@ -313,7 +312,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public void update(Location location) {
         mLocation = location;
-        latitude.setText(""+location.getLatitude());
-        longitude.setText(""+location.getLongitude());
+        if (location != null) {
+            latitude.setText("" + location.getLatitude());
+            longitude.setText("" + location.getLongitude());
+        }
     }
 }
