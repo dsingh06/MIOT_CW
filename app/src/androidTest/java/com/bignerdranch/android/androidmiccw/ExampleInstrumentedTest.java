@@ -36,5 +36,4 @@ public class ExampleInstrumentedTest {
                 .check(matches(withText("Stop Sampling")));
     }
 
-
 }
