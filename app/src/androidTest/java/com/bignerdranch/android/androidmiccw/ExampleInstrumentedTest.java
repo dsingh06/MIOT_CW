@@ -13,6 +13,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
@@ -29,8 +30,10 @@ public class ExampleInstrumentedTest {
 
     @Test
     public void startAndStop() {
-        onView(withText("Start Sampling")).check(matches(isDisplayed()));
-        onView(withText("Start Sampling")).perform(click());
-        onView(withText("Stop Sampling")).check(matches(isDisplayed()));
+        onView(withId(R.id.sample_but))
+                .check(matches(withText("Start Sampling")))
+                .perform(click())
+                .check(matches(withText("Stop Sampling")));
     }
+
 }

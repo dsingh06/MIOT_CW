@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private String mFileName = null;
     private int sampleKickoffFrequency = 1;
     private int sampleDuration = 1;
-    private List<Integer> soundArray = new ArrayList<>();
     private List<Sample> sampleArray = new ArrayList<>();
     private Sample sample;
     private String uid;
@@ -113,17 +112,17 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(findViewById(R.id.my_toolbar));
         ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
 
-        readingTV = findViewById(R.id.reading);
-        timeTV = findViewById(R.id.timeDuration);
-        frequencyTV = findViewById(R.id.timeFrequency);
-        latitude = findViewById(R.id.lat);
-        longitude = findViewById(R.id.lon);
+        readingTV = findViewById(R.id.reading_units);
+        timeTV = findViewById(R.id.sampling_duration_units);
+        frequencyTV = findViewById(R.id.sampling_frequency_units);
+        latitude = findViewById(R.id.lat_units);
+        longitude = findViewById(R.id.lon_units);
 
         // Record to the external cache directory for visibility
         mFileName = getExternalCacheDir().getAbsolutePath();
         mFileName += "/audio31.3gp";
 
-        sampleBut = findViewById(R.id.sample);
+        sampleBut = findViewById(R.id.sample_but);
         sampleBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -135,8 +134,6 @@ public class MainActivity extends AppCompatActivity {
                     sampleBut.setText(R.string.stop_sampling);
                     duration.setClickable(false);
                     frequency.setClickable(false);
-                    soundArray.clear();
-                    update(mLocation);
                     startSampling();
                 }
             }
@@ -199,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
         sample.setIid(InstanceID.getInstance(this).getId());
         sample.setUid(uid);
         initialiseRecorder();
+        Log.i(TAG, "Recorder initialised with " + sampleDuration + " s max duration of recording ");
         try {
             recorder.prepare();
             if (mLocation != null) {
@@ -207,6 +205,8 @@ public class MainActivity extends AppCompatActivity {
             }
             sample.setStartTime(new Date().getTime());
             recorder.start();
+            recorder.getMaxAmplitude();
+            Log.i(TAG, "recorder started");
         } catch (IOException e) {
             Log.i(TAG, "prepare() failed");
         }
@@ -217,21 +217,20 @@ public class MainActivity extends AppCompatActivity {
      * Queues up the next sample if isContinuouslyRecording is true.
      */
     private void onSampleComplete() {
-        Log.i(TAG, "onSampleComplete");
-        int value = (int) round(20 * log10(recorder.getMaxAmplitude() / 32767.0));
         recorder.stop();
+        double amplitude = recorder.getMaxAmplitude();
+        Log.i(TAG, "onSampleComplete, recorded amplitude" + amplitude);
+        double doublevalue = (20 * log10((0.00002 + (amplitude * ((0.6325-0.00002) / 32767.0)))/0.00002));
+        Log.i(TAG, "onSampleComplete, conversion to double" + doublevalue);
+        int value = (int) round(doublevalue);
+        Log.i(TAG, "onSampleComplete, conversion to decibels" + value);
         recorder.reset();
         recorder.release();
         recorder = null;
         long stopTime = new Date().getTime();
         sample.setStopTime(stopTime);
-        soundArray.add(value);
         sample.setMaxDecibels(value);
-        int display=-500;
-        for (int j: soundArray){
-            if (j>display)display = j;
-        }
-        readingTV.setText(""+display+"dB");
+        readingTV.setText(""+value+"dB");
         sampleArray.add(sample);
         if (isContinuouslyRecording) {
             //Since the callback is on the UI thread, using an AsyncTask to sleep on a background thread
@@ -296,11 +295,13 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("Exception caught","File already set");
             }
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            Log.i(TAG,"recorder about to setOnInfoListener");
             recorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
                 @Override
                 public void onInfo(MediaRecorder mr, int what, int extra) {
                     if (what == MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
                         onSampleComplete();
+                        Log.i(TAG,"recorder sample done, max dB:" + sample.getMaxDecibels());
                     }
                 }
             });
@@ -313,7 +314,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public void update(Location location) {
         mLocation = location;
-        latitude.setText(""+location.getLatitude());
-        longitude.setText(""+location.getLongitude());
+        if (location != null) {
+            latitude.setText("" + location.getLatitude());
+            longitude.setText("" + location.getLongitude());
+        }
     }
 }
