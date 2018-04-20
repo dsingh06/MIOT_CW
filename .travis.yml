@@ -5,8 +5,8 @@ android:
     - tools # see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943)
     - platform-tools
     - tools
-    - build-tools-27.0.3
-    - android-27
+    - build-tools-26.0.1
+    - android-26
      # Support library
     - extra-android-support
     - extra-android-m2repository
