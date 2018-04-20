@@ -30,7 +30,7 @@ public class ExampleInstrumentedTest {
 
     @Test
     public void startAndStop() {
-        onView(withId(R.id.sample_but))
+        onView(withId(R.id.sample))
                 .check(matches(withText("Start Sampling")))
                 .perform(click())
                 .check(matches(withText("Stop Sampling")));
