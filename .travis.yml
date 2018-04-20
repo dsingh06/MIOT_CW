@@ -20,5 +20,5 @@ jdk:
   - oraclejdk8
 
 script:
-  - ./gradlew build connectedCheck
+#  - ./gradlew build connectedCheck
   - ./gradlew test
