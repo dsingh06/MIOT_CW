@@ -1,15 +1,24 @@
 language: android
 android:
+
   components:
-    - tools # to get the new `repository-11.xml`
     - tools # see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943)
     - platform-tools
+    - tools
     - build-tools-26.0.1
     - android-26
+     # Support library
+    - extra-android-support
+    - extra-android-m2repository
+
+before_install:
+  - yes | sdkmanager "platforms;android-27"
+  - yes | sdkmanager "platforms;android-26"
+
 jdk:
   # Jdk version used by your project
   - oraclejdk8
 
 script:
-  - ./gradlew build connectedCheck
+#  - ./gradlew build connectedCheck
   - ./gradlew test
